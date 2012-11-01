@@ -22,8 +22,8 @@ list_t* list_create( void )
 	list_t* list;
 	node_t* end;
 
-	list = (list_t*)mem_alloc( sizeof(*list) );
-	end = (node_t*)mem_alloc( sizeof(*end) );
+	list = mem_alloc( sizeof(*list) );
+	end = mem_alloc( sizeof(*end) );
 
 	end->next = end;
 	end->prev = end;
