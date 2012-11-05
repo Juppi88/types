@@ -22,7 +22,7 @@
 
 #include "Types/Colour.h"
 #include "Types/List.h"
-#include "Types/Math.h"
+#include "Types/MathDefs.h"
 #include "Types/Rectangle.h"
 #include "Types/Tree.h"
 #include "Types/Vector2.h"

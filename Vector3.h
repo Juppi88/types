@@ -13,33 +13,37 @@
 #ifndef __MYLLY_VECTOR3_H
 #define __MYLLY_VECTOR3_H
 
-#include "Types/Types.h"
+#include "Defines.h"
 
-typedef struct vector3_s
+typedef struct
 {
-	float		x;
-	float		y;
-	float		z;
+	struct {
+		float x;
+		float y;
+		float z;
+	};
+	float coords[3];
 } vector3_t;
 
-__inline float vector_length( const vector3_t* vec )
-{
-	return sqrtf( POW2(vec->x) + POW2(vec->y) + POW2(vec->z) );
-}
+__BEGIN_DECLS
 
-__inline float vector_length_fast( const vector3_t* vec )
-{
-	return POW2(vec->x) + POW2(vec->y) + POW2(vec->z);
-}
+MYLLY_API void			vector3_add				( vector3_t* result, const vector3_t* v1, const vector3_t* v2 );
+MYLLY_API void			vector3_subtract		( vector3_t* result, const vector3_t* v1, const vector3_t* v2 );
+MYLLY_API void			vector3_multiply		( vector3_t* result, const vector3_t* v, float value );
+MYLLY_API void			vector3_divide			( vector3_t* result, const vector3_t* v, float value );
+MYLLY_API void			vector3_add_scalar		( vector3_t* result, const vector3_t* v, float value );
+MYLLY_API void			vector3_subtract_scalar	( vector3_t* result, const vector3_t* v, float value );
 
-__inline float vector_dist( const vector3_t* vec1, const vector3_t* vec2 )
-{
-	return sqrtf( POW2( vec2->x - vec1->x ) + POW2( vec2->y - vec1->y ) + POW2( vec2->z - vec1->z ) );
-}
+MYLLY_API float			vector3_dot				( const vector3_t* v1, const vector3_t* v2 );
+MYLLY_API void			vector3_cross			( vector3_t* result, const vector3_t* v1, const vector3_t* v2 );
+MYLLY_API float			vector3_angle			( const vector3_t* v1, const vector3_t* v2 );
 
-__inline float vector_dist_fast( const vector3_t* vec1, const vector3_t* vec2 )
-{
-	return POW2( vec2->x - vec1->x ) + POW2( vec2->y - vec1->y ) + POW2( vec2->z - vec1->z );
-}
+MYLLY_API float			vector3_length			( const vector3_t* v );
+MYLLY_API float			vector3_length_sq		( const vector3_t* v );
+MYLLY_API float			vector3_distance		( const vector3_t* v1, const vector3_t* v2 );
+MYLLY_API float			vector3_distance_sq		( const vector3_t* v1, const vector3_t* v2 );
+MYLLY_API void			vector3_normalize		( vector3_t* v );
+
+__END_DECLS
 
 #endif /* __MYLLY_VECTOR3_H */
