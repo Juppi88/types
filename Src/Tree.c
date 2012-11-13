@@ -10,9 +10,10 @@
  *
  **********************************************************************/
 
-#include "Tree.h"
-#include "Platform/Platform.h"
+#include "Types/Tree.h"
+#include <malloc.h>
 #include <assert.h>
+#include <stdlib.h>
 
 /*
  * __tree_node_destructor - An empty default destructor
@@ -20,6 +21,33 @@
 static void __tree_node_destructor( void* ptr )
 {
 	UNREFERENCED_PARAM(ptr);
+}
+
+/*
+ * __tree_alloc - An allocator func with further error
+ * checking. Exits the app if allocating fails.
+ * @arg size: Size to be allocated in bytes
+ * @returns: A pointer to the allocated memory block
+ */
+static void* __tree_alloc( size_t size )
+{
+	void* ptr;
+
+	ptr = malloc( size );
+
+	assert( ptr != NULL ); // If we're in debug mode trigger the assertion
+	if ( ptr ) return ptr;
+	
+	exit( 0 ); // Otherwise exit the application just in case
+}
+
+/*
+ * __tree_free - A memory freeing func.
+ * @arg ptr: Memory block to be freed.
+ */
+static void __tree_free( const void* ptr )
+{
+	free( (void*)ptr );
 }
 
 /*
@@ -32,8 +60,8 @@ tree_t* tree_create( void (*destructor)( void* ) )
 	tree_t* tree;
 	tnode_t* null;
 
-	tree = mem_alloc( sizeof(*tree) );
-	null = mem_alloc( sizeof(*null) );
+	tree = __tree_alloc( sizeof(*tree) );
+	null = __tree_alloc( sizeof(*null) );
 
 	null->level = null->key = 0;
 	null->left = null->right = null;
@@ -74,8 +102,8 @@ void tree_destroy( tree_t* tree )
 
 	__tree_destroy( tree, tree->root );
 
-	mem_free( tree->null );
-	mem_free( tree );
+	__tree_free( tree->null );
+	__tree_free( tree );
 }
 
 /*

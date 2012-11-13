@@ -9,9 +9,37 @@
  *
  **********************************************************************/
 
-#include "List.h"
-#include "Platform/Platform.h"
+#include "Types/List.h"
+#include <malloc.h>
 #include <assert.h>
+#include <stdlib.h>
+
+/*
+ * __list_alloc - An allocator func with further error
+ * checking. Exits the app if allocating fails.
+ * @arg size: Size to be allocated in bytes
+ * @returns: A pointer to the allocated memory block
+ */
+static void* __list_alloc( size_t size )
+{
+	void* ptr;
+
+	ptr = malloc( size );
+
+	assert( ptr != NULL ); // If we're in debug mode trigger the assertion
+	if ( ptr ) return ptr;
+	
+	exit( 0 ); // Otherwise exit the application just in case
+}
+
+/*
+ * __list_free - A memory freeing func.
+ * @arg ptr: Memory block to be freed.
+ */
+static void __list_free( const void* ptr )
+{
+	free( (void*)ptr );
+}
 
 /*
  * list_create - Create and initialize a linked list.
@@ -22,8 +50,8 @@ list_t* list_create( void )
 	list_t* list;
 	node_t* end;
 
-	list = mem_alloc( sizeof(*list) );
-	end = mem_alloc( sizeof(*end) );
+	list = __list_alloc( sizeof(*list) );
+	end = __list_alloc( sizeof(*end) );
 
 	end->next = end;
 	end->prev = end;
@@ -52,8 +80,8 @@ void list_destroy( list_t* list )
 		node->next = NULL;
 	}
 
-	mem_free( list->end );
-	mem_free( list );
+	__list_free( list->end );
+	__list_free( list );
 }
 
 /*
