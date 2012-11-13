@@ -1,6 +1,6 @@
--- Base types (Vector, linked list etc)
+-- Basic container types (linked list, hash map, tree...)
 
-project "Types"
+project "Lib-Types"
 	kind "StaticLib"
 	language "C"
 	files { "**.h", "**.c", "premake4.lua" }

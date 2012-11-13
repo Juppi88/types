@@ -13,7 +13,7 @@
 #ifndef __MYLLY_HASHMAP_H
 #define __MYLLY_HASHMAP_H
 
-#include "Defines.h"
+#include "stdtypes.h"
 
 typedef uint32	( *hash_func_t )	( const void* );
 typedef bool	( *key_func_t )		( const void*, const void* );

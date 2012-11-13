@@ -14,7 +14,7 @@
 #ifndef __MYLLY_TREE_H
 #define __MYLLY_TREE_H
 
-#include "Defines.h"
+#include "stdtypes.h"
 
 typedef struct tnode_s
 {

@@ -13,7 +13,7 @@
 #ifndef __MYLLY_LIST_H
 #define __MYLLY_LIST_H
 
-#include "Defines.h"
+#include "stdtypes.h"
 
 typedef struct node_s {
 	struct node_s*	next;	// The next node on this list.
