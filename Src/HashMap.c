@@ -13,6 +13,7 @@
 #include <malloc.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define HASHMAP_INITIAL_CAPACITY	(100)
 #define HASHMAP_MAX_LOAD_FACTOR		(0.75f)
