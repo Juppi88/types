@@ -48,20 +48,18 @@ static void __hashmap_free( const void* ptr )
 
 /*
  * __hashmap_hash - Default hasher function.
- * Calculates a rotating XOR hash from the given text key.
+ * djb2 hash from http://www.cse.yorku.ca/~oz/hash.html
  * @arg key: Pointer to key
  * @returns: Calculated hash
  */
 static uint32 __hashmap_hash( const void* key )
 {
 	register char* s;
-	register size_t hash = 0;
+	register size_t hash = 5381;
 
-	s = (char*)key;
-
-	while ( *s )
+	for ( s = (char*)key; *s; s++ )
 	{
-		hash = ( hash << 4 ) ^ ( hash >> 28 ) ^ *s++;
+		hash = ( (hash << 5) + hash ) + *s;
 	}
 
 	return hash;
@@ -120,10 +118,12 @@ hashmap_t* hashmap_create( uint32 size )
 	map->bucket_count = size ? size : HASHMAP_INITIAL_CAPACITY;
 	map->load_factor = 0;
 	map->max_load_factor = HASHMAP_MAX_LOAD_FACTOR;
-	map->nodes = __hashmap_alloc( sizeof(hashnode_t*) * map->bucket_count );
 	map->key_hash = __hashmap_hash;
 	map->key_equals = __hashmap_key_equal;
 	map->key_dup = __hashmap_key_dup;
+
+	map->nodes = __hashmap_alloc( sizeof(hashnode_t*) * map->bucket_count );
+	memset( map->nodes, 0, sizeof(hashnode_t*) * map->bucket_count );
 
 	return map;
 }
@@ -139,8 +139,8 @@ void hashmap_destroy( hashmap_t* map )
 
 	hashmap_clear( map );
 
-	__hashmap_free( map->nodes );
-	__hashmap_free( map );
+	//__hashmap_free( map->nodes );
+	//__hashmap_free( map );
 }
 
 /*
@@ -158,7 +158,7 @@ static hashnode_t* __hashmap_node_create( hashmap_t* map, const void* key, const
 	node->key = map->key_dup( key );
 	node->data = data;
 	node->next = NULL;
-
+	
 	map->size++;
 	map->load_factor = (float)map->size / map->bucket_count;
 
@@ -193,7 +193,7 @@ void* hashmap_insert( hashmap_t* map, const void* key, const void* data )
 			{
 				old = (void*)node->data;
 				node->data = data;
-
+				
 				if ( map->data_destroy )
 				{
 					map->data_destroy( old );
@@ -206,7 +206,7 @@ void* hashmap_insert( hashmap_t* map, const void* key, const void* data )
 	}
 
 	newnode = __hashmap_node_create( map, key, data );
-	newnode->next = node;
+	newnode->next = map->nodes[hash];
 
 	map->nodes[hash] = newnode;
 	
@@ -224,7 +224,7 @@ void* hashmap_insert( hashmap_t* map, const void* key, const void* data )
  */
 void* hashmap_erase( hashmap_t* map, const void* key )
 {
-	hashnode_t *node, *prev;
+	hashnode_t *node, *prev, *first;
 	void* data;
 	uint32 hash;
 
@@ -236,11 +236,16 @@ void* hashmap_erase( hashmap_t* map, const void* key )
 
 	if ( !node ) return NULL;
 
-	for ( prev = NULL; node; prev = node, node = node->next )
+	for ( first = node, prev = NULL; node; prev = node, node = node->next )
 	{
 		if ( map->key_equals( key, node->key ) )
 		{
-			prev->next = node->next;
+			if ( prev )
+				prev->next = node->next;
+
+			if ( node == first )
+				map->nodes[hash] = node->next;
+
 			data = (void*)node->data;
 
 			__hashmap_free( node->key );
@@ -341,7 +346,7 @@ static void __hashmap_rehash_insert( hashmap_t* map, hashnode_t* node )
 		node->next = NULL;
 	else
 		node->next = bucket;
-
+	
 	map->nodes[hash] = node;
 }
 
@@ -354,7 +359,7 @@ static void __hashmap_rehash_insert( hashmap_t* map, hashnode_t* node )
 void hashmap_rehash( hashmap_t* map, uint32 buckets )
 {
 	hashnode_t** nodes;
-	hashnode_t* node;
+	hashnode_t *node, *next;
 	uint32 i, old_buckets;
 
 	assert( map != NULL );
@@ -368,10 +373,14 @@ void hashmap_rehash( hashmap_t* map, uint32 buckets )
 	map->nodes = __hashmap_alloc( sizeof(hashnode_t*) * buckets );
 	map->bucket_count = buckets;
 
+	memset( map->nodes, 0, sizeof(hashnode_t*) * buckets );
+
 	for ( i = 0; i < old_buckets; i++ )
 	{
-		for ( node = nodes[i]; node; node = node->next )
+		for ( node = nodes[i]; node; node = next )
 		{
+			next = node->next;
+
 			__hashmap_rehash_insert( map, node );
 		}
 	}
