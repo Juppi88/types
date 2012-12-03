@@ -121,6 +121,7 @@ hashmap_t* hashmap_create( uint32 size )
 	map->key_hash = __hashmap_hash;
 	map->key_equals = __hashmap_key_equal;
 	map->key_dup = __hashmap_key_dup;
+	map->data_destroy = NULL;
 
 	map->nodes = __hashmap_alloc( sizeof(hashnode_t*) * map->bucket_count );
 	memset( map->nodes, 0, sizeof(hashnode_t*) * map->bucket_count );
