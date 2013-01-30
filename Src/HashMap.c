@@ -34,7 +34,7 @@ static void* __hashmap_alloc( size_t size )
 	assert( ptr != NULL ); // If we're in debug mode trigger the assertion
 	if ( ptr ) return ptr;
 	
-	exit( 0 ); // Otherwise exit the application just in case
+	exit( EXIT_FAILURE ); // Otherwise exit the application just in case
 }
 
 /*
