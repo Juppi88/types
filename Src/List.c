@@ -108,7 +108,7 @@ static __inline void __list_add( list_t* list, node_t* node,
 /*
  * list_push_back - Add a new node to the end of the list.
  * @list: The list to manipulate
- * @data: The new node to be added
+ * @node: The new node to be added
  */
 void list_push_back( list_t* list, node_t* node )
 {
@@ -121,7 +121,7 @@ void list_push_back( list_t* list, node_t* node )
 /*
  * list_push_front - Add a new node to the beginning of the list.
  * @list: The list to manipulate
- * @data: The new node to be added
+ * @node: The new node to be added
  */
 void list_push_front( list_t* list, node_t* node )
 {
@@ -129,6 +129,22 @@ void list_push_front( list_t* list, node_t* node )
 	assert( node != NULL );
 
 	__list_add( list, node, list->end, list->begin );
+}
+
+/*
+ * list_insert - Insert a new node before 'position'.
+ * @list: The list to manipulate
+ * @node: The new node to be added
+ * @position: The node before which the new node should be inserted
+ */
+void list_insert( list_t* list, node_t* node, node_t* position )
+{
+	assert( list != NULL );
+	assert( node != NULL );
+
+	if ( position == NULL ) position = list->end;
+
+	__list_add( list, node, position->prev, position );
 }
 
 /*

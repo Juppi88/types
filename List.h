@@ -68,6 +68,7 @@ MYLLY_API void				list_destroy				( list_t* list );
 
 MYLLY_API void				list_push_back				( list_t* list, node_t* node );
 MYLLY_API void				list_push_front				( list_t* list, node_t* node );
+MYLLY_API void				list_insert					( list_t* list, node_t* node, node_t* position );
 MYLLY_API node_t*			list_pop_back				( list_t* list );
 MYLLY_API node_t*			list_pop_front				( list_t* list );
 MYLLY_API void				list_remove					( list_t* list, node_t* node );
