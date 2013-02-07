@@ -18,6 +18,7 @@
 typedef struct node_s {
 	struct node_s*	next;	// The next node on this list.
 	struct node_s*	prev;	// The previous node.
+	void*			data;	// Pointer to data
 } node_t;
 
 typedef struct {
@@ -56,10 +57,11 @@ typedef struct {
 	      node != list->end;                    \
 	      node = tmp, tmp = node->next )        \
 
-
 /* Some macros to shorten often used function names */
-#define list_push(list,node)	list_push_back(list,node)
-#define list_pop(list)			list_pop_back(list)
+#define list_push(list,node)		list_push_back(list,node)
+#define list_pop(list)				list_pop_back(list)
+#define list_data_push(list,data)	list_data_push_back(list,data)
+#define list_data_pop_data(list)	list_data_pop_back(list)
 
 __BEGIN_DECLS
 
@@ -72,6 +74,13 @@ MYLLY_API void				list_insert					( list_t* list, node_t* node, node_t* position
 MYLLY_API node_t*			list_pop_back				( list_t* list );
 MYLLY_API node_t*			list_pop_front				( list_t* list );
 MYLLY_API void				list_remove					( list_t* list, node_t* node );
+
+MYLLY_API node_t*			list_data_push_back			( list_t* list, void* data );
+MYLLY_API node_t*			list_data_push_front		( list_t* list, void* data );
+MYLLY_API node_t*			list_data_insert			( list_t* list, void* data, node_t* position );
+MYLLY_API void*				list_data_pop_back			( list_t* list );
+MYLLY_API void*				list_data_pop_front			( list_t* list );
+MYLLY_API void				list_data_remove			( list_t* list, void* data );
 
 MYLLY_API void				list_move_backward			( list_t* list, node_t* node );
 MYLLY_API void				list_move_forward			( list_t* list, node_t* node );

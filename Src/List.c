@@ -50,11 +50,12 @@ list_t* list_create( void )
 	list_t* list;
 	node_t* end;
 
-	list = __list_alloc( sizeof(*list) );
-	end = __list_alloc( sizeof(*end) );
+	list = (list_t*)__list_alloc( sizeof(*list) );
+	end = (node_t*)__list_alloc( sizeof(*end) );
 
 	end->next = end;
 	end->prev = end;
+	end->data = NULL;
 
 	list->begin = end;
 	list->end = end;
@@ -152,7 +153,7 @@ void list_insert( list_t* list, node_t* node, node_t* position )
  * @prev: Previous node
  * @next: Next node
  */
-static __inline void __list_remove( list_t* list, node_t* node,
+static __inline node_t* __list_remove( list_t* list, node_t* node,
 								   node_t* prev, node_t* next )
 {
 	next->prev = prev;
@@ -164,6 +165,14 @@ static __inline void __list_remove( list_t* list, node_t* node,
 		list->begin = next;
 
 	list->size--;
+
+	if ( node->data )
+	{
+		__list_free( node );
+		node = NULL;
+	}
+
+	return node;
 }
 
 /*
@@ -181,8 +190,7 @@ node_t* list_pop_back( list_t* list )
 
 	node = list->end->prev;
 
-	__list_remove( list, node, node->prev, node->next );
-	return node;
+	return __list_remove( list, node, node->prev, node->next );
 }
 
 /*
@@ -200,8 +208,7 @@ node_t* list_pop_front( list_t* list )
 
 	node = list->begin;
 
-	__list_remove( list, node, node->prev, node->next );
-	return node;
+	return __list_remove( list, node, node->prev, node->next );
 }
 
 /*
@@ -217,6 +224,154 @@ void list_remove( list_t* list, node_t* node )
 	if ( list_empty(list) ) return;
 
 	__list_remove( list, node, node->prev, node->next );
+}
+
+/*
+ * __list_create_node - Creates a new node as a container for the specified data.
+ * @data: Data to be stored.
+ * @returns: Pointer to the new node.
+ */
+static __inline node_t* __list_create_node( void* data )
+{
+	node_t* node;
+
+	node = (node_t*)__list_alloc( sizeof(*node) );
+	node->prev = NULL;
+	node->next = NULL;
+	node->data = data;
+
+	return node;
+}
+
+/*
+ * list_data_push_back - Create and add a new node to the end of the list.
+ * @list: The list to manipulate
+ * @data: The data to be added
+ * @returns: List node for the pushed data
+ */
+node_t* list_data_push_back( list_t* list, void* data )
+{
+	node_t* node;
+
+	assert( list != NULL );
+	assert( data != NULL );
+
+	node = __list_create_node( data );
+
+	__list_add( list, node, list->end->prev, list->end );
+
+	return node;
+}
+
+/*
+ * list_data_push_front - Create and add a new node to the beginning of the list.
+ * @data: The data to be added
+ * @returns: List node for the pushed data
+ */
+node_t* list_data_push_front( list_t* list, void* data )
+{
+	node_t* node;
+
+	assert( list != NULL );
+	assert( data != NULL );
+
+	node = __list_create_node( data );
+
+	__list_add( list, node, list->end, list->begin );
+
+	return node;
+}
+
+/*
+ * list_data_insert - Insert a new data node before 'position'.
+ * @list: The list to manipulate
+ * @data: The data to be added
+ * @position: The node before which the new node should be inserted
+ * @returns: List node for the pushed data
+ */
+node_t* list_data_insert( list_t* list, void* data, node_t* position )
+{
+	node_t* node;
+
+	assert( list != NULL );
+	assert( data != NULL );
+
+	if ( position == NULL ) position = list->end;
+
+	node = __list_create_node( data );
+
+	__list_add( list, node, position->prev, position );
+
+	return node;
+}
+
+/*
+ * list_data_pop_back - Removes a node from the end of the list
+ * and returns the contained data.
+ * @list: The list to manipulate
+ * @returns: Data contained by the node, or NULL if there was nothing to remove.
+ */
+void* list_data_pop_back( list_t* list )
+{
+	node_t* node;
+	void* data;
+
+	assert( list != NULL );
+
+	if ( list_empty(list) ) return NULL;
+
+	node = list->end->prev;
+	data = node->data;
+
+	__list_remove( list, node, node->prev, node->next );
+
+	return data;
+}
+
+/*
+ * list_data_pop_front - Removes a node from the beginning of the list
+ * and returns the contained data.
+ * @list: The list to manipulate
+ * @returns: Data contained by the node, or NULL if there was nothing to remove.
+ */
+void* list_data_pop_front( list_t* list )
+{
+	node_t* node;
+	void* data;
+
+	assert( list != NULL );
+
+	if ( list_empty(list) ) return NULL;
+
+	node = list->begin;
+	data = node->data;
+
+	__list_remove( list, node, node->prev, node->next );
+
+	return data;
+}
+
+/*
+ * list_data_remove - Removes an arbitrary node from the list.
+ * @list: The list to manipulate
+ * @data: Data which should be removed from the list.
+ */
+void list_data_remove( list_t* list, void* data )
+{
+	node_t* node;
+
+	assert( list != NULL );
+
+	if ( list_empty(list) ) return;
+	if ( data == NULL ) return;
+
+	list_foreach( list, node )
+	{
+		if ( node->data == data ) break;
+	}
+
+	if ( node != list->end )
+		__list_remove( list, node, node->prev, node->next );
 }
 
 /*
