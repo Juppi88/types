@@ -79,6 +79,9 @@ void list_destroy( list_t* list )
 	{
 		node->prev = NULL;
 		node->next = NULL;
+
+		if ( node->data )
+			__list_free( node );
 	}
 
 	__list_free( list->end );
