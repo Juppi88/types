@@ -432,7 +432,7 @@ void list_send_to_back( list_t* list, node_t* node )
 	assert( node != NULL );
 
 	__list_remove( list, node, node->prev, node->next );
-	__list_add( list, node, list->end->next, list->end );
+	__list_add( list, node, list->end->prev, list->end );
 }
 
 /*
