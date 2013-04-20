@@ -22,46 +22,48 @@ typedef struct node_s {
 } node_t;
 
 typedef struct {
-	struct node_s*	begin;	// The first list node
-	struct node_s*	end;	// End iterator (one past last node)
-	uint32			size;	// The size of the list
+	uint32			size;		// The size of the list
+	struct node_s	sentinel;	// Sentinel node
 } list_t;
+
+/* Some macros to shorten often used function names */
+#define list_begin(list)			list->sentinel.next
+#define list_end(list)				&list->sentinel
+#define list_push(list,node)		list_push_back(list,node)
+#define list_pop(list)				list_pop_back(list)
+#define list_data_push(list,data)	list_data_push_back(list,data)
+#define list_data_pop_data(list)	list_data_pop_back(list)
 
 /*
  * list_foreach - A macro to loop through every node
  * @list: The list to loop through
  * @node: A node_t loop variable
  */
-#define list_foreach(list,node) \
-	for ( node = list->begin;   \
-	      node != list->end;    \
-	      node = node->next )   \
+#define list_foreach(list,node)       \
+	for ( node = list->sentinel.next; \
+	      node != &list->sentinel;    \
+	      node = node->next )         \
 
 /*
  * list_foreach_r - A macro to loop through every node in reversed order
  * @list: The list to loop through
  * @node: A node_t loop variable
  */
-#define list_foreach_r(list,node) \
-	for ( node = list->end->prev; \
-	      node != list->end;      \
-	      node = node->prev )     \
+#define list_foreach_r(list,node)     \
+	for ( node = list->sentinel.prev; \
+	      node != &list->sentinel;    \
+	      node = node->prev )         \
 
 /*
  * list_foreach_safe - A macro to loop through every node using a temp var
  * @list: The list to loop through
  * @node: A node_t loop variable
  */
-#define list_foreach_safe(list,node,tmp)        \
-	for ( node = list->begin, tmp = node->next; \
-	      node != list->end;                    \
-	      node = tmp, tmp = node->next )        \
-
-/* Some macros to shorten often used function names */
-#define list_push(list,node)		list_push_back(list,node)
-#define list_pop(list)				list_pop_back(list)
-#define list_data_push(list,data)	list_data_push_back(list,data)
-#define list_data_pop_data(list)	list_data_pop_back(list)
+#define list_foreach_safe(list,node,tmp)  \
+	for ( node = list->sentinel.next,     \
+          tmp = node->next;               \
+	      node != &list->sentinel;        \
+	      node = tmp, tmp = node->next )  \
 
 __BEGIN_DECLS
 

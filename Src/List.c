@@ -48,17 +48,13 @@ static void __list_free( const void* ptr )
 list_t* list_create( void )
 {
 	list_t* list;
-	node_t* end;
 
 	list = (list_t*)__list_alloc( sizeof(*list) );
-	end = (node_t*)__list_alloc( sizeof(*end) );
 
-	end->next = end;
-	end->prev = end;
-	end->data = NULL;
+	list->sentinel.next = &list->sentinel;
+	list->sentinel.prev = &list->sentinel;
+	list->sentinel.data = NULL;
 
-	list->begin = end;
-	list->end = end;
 	list->size = 0;
 
 	return list;
@@ -84,7 +80,6 @@ void list_destroy( list_t* list )
 			__list_free( node );
 	}
 
-	__list_free( list->end );
 	__list_free( list );
 }
 
@@ -103,8 +98,8 @@ static __inline void __list_add( list_t* list, node_t* node,
 	next->prev = node;
 	prev->next = node;
 
-	if ( list->begin == list->end || list->begin == next )
-		list->begin = node;
+	if ( list->sentinel.next == &list->sentinel || list->sentinel.next == next )
+		list->sentinel.next = node;
 
 	list->size++;
 }
@@ -119,7 +114,7 @@ void list_push_back( list_t* list, node_t* node )
 	assert( list != NULL );
 	assert( node != NULL );
 
-	__list_add( list, node, list->end->prev, list->end );
+	__list_add( list, node, list->sentinel.prev, &list->sentinel );
 }
 
 /*
@@ -132,7 +127,7 @@ void list_push_front( list_t* list, node_t* node )
 	assert( list != NULL );
 	assert( node != NULL );
 
-	__list_add( list, node, list->end, list->begin );
+	__list_add( list, node, &list->sentinel, list->sentinel.next );
 }
 
 /*
@@ -146,7 +141,7 @@ void list_insert( list_t* list, node_t* node, node_t* position )
 	assert( list != NULL );
 	assert( node != NULL );
 
-	if ( position == NULL ) position = list->end;
+	if ( position == NULL ) position = &list->sentinel;
 
 	__list_add( list, node, position->prev, position );
 }
@@ -164,8 +159,8 @@ static __inline node_t* __list_remove( list_t* list, node_t* node,
 	node->prev = NULL;
 	node->next = NULL;
 
-	if ( node == list->begin )
-		list->begin = next;
+	if ( node == list->sentinel.next )
+		list->sentinel.next = next;
 
 	list->size--;
 
@@ -189,9 +184,9 @@ node_t* list_pop_back( list_t* list )
 
 	assert( list != NULL );
 
-	if ( list_empty(list) ) return NULL;
+	if ( list_empty( list ) ) return NULL;
 
-	node = list->end->prev;
+	node = list->sentinel.prev;
 
 	return __list_remove( list, node, node->prev, node->next );
 }
@@ -207,9 +202,9 @@ node_t* list_pop_front( list_t* list )
 
 	assert( list != NULL );
 
-	if ( list_empty(list) ) return NULL;
+	if ( list_empty( list ) ) return NULL;
 
-	node = list->begin;
+	node = list->sentinel.next;
 
 	return __list_remove( list, node, node->prev, node->next );
 }
@@ -224,7 +219,7 @@ void list_remove( list_t* list, node_t* node )
 	assert( list != NULL );
 	assert( node != NULL );
 
-	if ( list_empty(list) ) return;
+	if ( list_empty( list ) ) return;
 
 	__list_remove( list, node, node->prev, node->next );
 }
@@ -261,7 +256,7 @@ node_t* list_data_push_back( list_t* list, void* data )
 
 	node = __list_create_node( data );
 
-	__list_add( list, node, list->end->prev, list->end );
+	__list_add( list, node, list->sentinel.prev, &list->sentinel );
 
 	return node;
 }
@@ -280,7 +275,7 @@ node_t* list_data_push_front( list_t* list, void* data )
 
 	node = __list_create_node( data );
 
-	__list_add( list, node, list->end, list->begin );
+	__list_add( list, node, &list->sentinel, list->sentinel.next );
 
 	return node;
 }
@@ -299,7 +294,7 @@ node_t* list_data_insert( list_t* list, void* data, node_t* position )
 	assert( list != NULL );
 	assert( data != NULL );
 
-	if ( position == NULL ) position = list->end;
+	if ( position == NULL ) position = &list->sentinel;
 
 	node = __list_create_node( data );
 
@@ -321,9 +316,9 @@ void* list_data_pop_back( list_t* list )
 
 	assert( list != NULL );
 
-	if ( list_empty(list) ) return NULL;
+	if ( list_empty( list ) ) return NULL;
 
-	node = list->end->prev;
+	node = list->sentinel.prev;
 	data = node->data;
 
 	__list_remove( list, node, node->prev, node->next );
@@ -344,9 +339,9 @@ void* list_data_pop_front( list_t* list )
 
 	assert( list != NULL );
 
-	if ( list_empty(list) ) return NULL;
+	if ( list_empty( list ) ) return NULL;
 
-	node = list->begin;
+	node = list->sentinel.next;
 	data = node->data;
 
 	__list_remove( list, node, node->prev, node->next );
@@ -365,7 +360,7 @@ void list_data_remove( list_t* list, void* data )
 
 	assert( list != NULL );
 
-	if ( list_empty(list) ) return;
+	if ( list_empty( list ) ) return;
 	if ( data == NULL ) return;
 
 	list_foreach( list, node )
@@ -373,8 +368,10 @@ void list_data_remove( list_t* list, void* data )
 		if ( node->data == data ) break;
 	}
 
-	if ( node != list->end )
+	if ( node != &list->sentinel )
+	{
 		__list_remove( list, node, node->prev, node->next );
+	}
 }
 
 /*
@@ -390,7 +387,7 @@ void list_move_backward( list_t* list, node_t* node )
 	assert( node != NULL );
 
 	tmp = node->next;
-	if ( tmp == list->end ) return;
+	if ( tmp == &list->sentinel ) return;
 
 	tmp->prev = node->prev;
 	tmp2 = tmp->next;
@@ -412,7 +409,7 @@ void list_move_forward( list_t* list, node_t* node )
 	assert( node != NULL );
 
 	tmp = node->prev;
-	if ( tmp == list->end ) return;
+	if ( tmp == &list->sentinel ) return;
 
 	tmp->next = node->next;
 	tmp2 = tmp->prev;
@@ -432,7 +429,7 @@ void list_send_to_back( list_t* list, node_t* node )
 	assert( node != NULL );
 
 	__list_remove( list, node, node->prev, node->next );
-	__list_add( list, node, list->end->prev, list->end );
+	__list_add( list, node, list->sentinel.prev, &list->sentinel );
 }
 
 /*
@@ -446,5 +443,5 @@ void list_send_to_front( list_t* list, node_t* node )
 	assert( node != NULL );
 
 	__list_remove( list, node, node->prev, node->next );
-	__list_add( list, node, list->end, list->begin );
+	__list_add( list, node, &list->sentinel, list->sentinel.next );
 }
