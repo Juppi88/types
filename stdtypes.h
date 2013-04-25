@@ -28,9 +28,11 @@
 
 	#define MYLLY_API		extern
 	#define MYLLY_EXPORT	__declspec(dllexport)
+	#define MYLLY_INLINE	__inline
 #else
 	#define MYLLY_API		extern
 	#define MYLLY_EXPORT	__attribute__((dllexport))
+	#define MYLLY_INLINE	inline
 #endif
 
 
@@ -73,8 +75,10 @@ typedef uint16		pixel_t;
 
 
 // Some useful macros
-#define BIT_ON(flags,mask)		((flags & mask) != 0)
-#define BIT_OFF(flags,mask)		((flags & mask) == 0)
+#define BIT_ON(flags,mask)			((flags & mask) != 0)
+#define BIT_OFF(flags,mask)			((flags & mask) == 0)
+#define BIT_ENABLED(new,old,mask)	((new & mask) != 0 && (old & mask) == 0)
+#define BIT_DISABLED(new,old,mask)	((new & mask) == 0 && (old & mask) != 0)
 
 #define UNREFERENCED_PARAM(P)	(void)P
 
