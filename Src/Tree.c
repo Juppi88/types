@@ -252,11 +252,12 @@ static tnode_t* __tree_remove( tree_t* tree, tnode_t* root, const uint32 key )
 	{
 		root->left = __tree_remove( tree, root->left, key );
 	}
-	else
+	else if ( key > root->key )
 	{
-		tree->deleted = root;
 		root->right = __tree_remove( tree, root->right, key );
 	}
+	else
+		tree->deleted = root;
 
 	if ( root == tree->last &&
 		 tree->deleted != tree->null &&

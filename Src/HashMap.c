@@ -140,8 +140,11 @@ void hashmap_destroy( hashmap_t* map )
 
 	hashmap_clear( map );
 
-	//__hashmap_free( map->nodes );
-	//__hashmap_free( map );
+	__hashmap_free( map->nodes );
+	map->nodes = 0;
+
+	__hashmap_free( map );
+	map = 0;
 }
 
 /*
