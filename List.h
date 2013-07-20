@@ -15,15 +15,15 @@
 
 #include "stdtypes.h"
 
-typedef struct node_s {
-	struct node_s*	next;	// The next node on this list.
-	struct node_s*	prev;	// The previous node.
+typedef struct node_t {
+	struct node_t*	next;	// The next node on this list.
+	struct node_t*	prev;	// The previous node.
 	void*			data;	// Pointer to data
 } node_t;
 
 typedef struct {
 	uint32			size;		// The size of the list
-	struct node_s	sentinel;	// Sentinel node
+	struct node_t	sentinel;	// Sentinel node
 } list_t;
 
 /* Some macros to shorten often used function names */
@@ -33,6 +33,8 @@ typedef struct {
 #define list_pop(list)				list_pop_back(list)
 #define list_data_push(list,data)	list_data_push_back(list,data)
 #define list_data_pop_data(list)	list_data_pop_back(list)
+
+#define list_empty(list)			( list->size == 0 )
 
 /*
  * list_foreach - A macro to loop through every node
@@ -88,11 +90,6 @@ MYLLY_API void				list_move_backward			( list_t* list, node_t* node );
 MYLLY_API void				list_move_forward			( list_t* list, node_t* node );
 MYLLY_API void				list_send_to_back			( list_t* list, node_t* node );
 MYLLY_API void				list_send_to_front			( list_t* list, node_t* node );
-
-static __inline bool		list_empty					( list_t* list )
-{
-	return ( list->size == 0 );
-}
 
 __END_DECLS
 

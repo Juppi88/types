@@ -37,7 +37,7 @@ static void* __tree_alloc( size_t size )
 
 	assert( ptr != NULL ); // If we're in debug mode trigger the assertion
 	if ( ptr ) return ptr;
-	
+
 	exit( EXIT_FAILURE ); // Otherwise exit the application just in case
 }
 
@@ -58,16 +58,12 @@ static void __tree_free( const void* ptr )
 tree_t* tree_create( void (*destructor)( void* ) )
 {
 	tree_t* tree;
-	tnode_t* null;
-
 	tree = __tree_alloc( sizeof(*tree) );
-	null = __tree_alloc( sizeof(*null) );
 
-	null->level = null->key = 0;
-	null->left = null->right = null;
+	tree->null.level = tree->null.key = 0;
+	tree->null.left = tree->null.right = &tree->null;
 
-	tree->null = null;
-	tree->root = null;
+	tree->root = &tree->null;
 	tree->deleted = NULL;
 	tree->size = 0;
 	tree->destructor = destructor ? destructor : __tree_node_destructor;
@@ -84,10 +80,10 @@ static void __tree_destroy( tree_t* tree, tnode_t* node )
 {
 	assert( node != NULL );
 
-	if ( node == tree->null ) return;
-	if ( node->left != tree->null ) __tree_destroy( tree, node->left );
-	if ( node->right != tree->null ) __tree_destroy( tree, node->right );
-	
+	if ( node == &tree->null ) return;
+	if ( node->left != &tree->null ) __tree_destroy( tree, node->left );
+	if ( node->right != &tree->null ) __tree_destroy( tree, node->right );
+
 	tree->destructor( node );
 }
 
@@ -101,8 +97,6 @@ void tree_destroy( tree_t* tree )
 	assert( tree->root != NULL );
 
 	__tree_destroy( tree, tree->root );
-
-	__tree_free( tree->null );
 	__tree_free( tree );
 }
 
@@ -159,7 +153,7 @@ static tnode_t* __tree_split( tnode_t* node )
  * @key: Wanted key
  * @returns: The result node, or NULL if no matching key was found
  */
-static tnode_t* __tree_find( tnode_t* null, tnode_t* node, const uint32 key )
+static tnode_t* __tree_find( tnode_t* null, tnode_t* node, uint32 key )
 {
 	if ( node == null ) return NULL;
 	else if ( node->key > key ) return __tree_find( null, node->left, key );
@@ -173,9 +167,9 @@ static tnode_t* __tree_find( tnode_t* null, tnode_t* node, const uint32 key )
  * @key: Wanted key
  * @returns: The result node, or NULL if no matching key was found
  */
-tnode_t* tree_find( tree_t* tree, const uint32 key )
+tnode_t* tree_find( tree_t* tree, uint32 key )
 {
-	return __tree_find( tree->null, tree->root, key );
+	return __tree_find( &tree->null, tree->root, key );
 }
 
 /*
@@ -202,9 +196,9 @@ static __inline tnode_t* __tree_new_node( tnode_t* node, tnode_t* null )
  */
 static tnode_t* __tree_insert( tree_t* tree, tnode_t* root, tnode_t* data )
 {
-	if ( root == tree->null )
+	if ( root == &tree->null )
 	{
-		root = __tree_new_node( data, tree->null );
+		root = __tree_new_node( data, &tree->null );
 		tree->size++;
 		return root;
 	}
@@ -230,8 +224,12 @@ static tnode_t* __tree_insert( tree_t* tree, tnode_t* root, tnode_t* data )
  * @data: The node to be inserted
  * @returns: The new root node
  */
-void tree_insert( tree_t* tree, tnode_t* data )
+void tree_insert( tree_t* tree, uint32 key, tnode_t* data )
 {
+	assert( tree != NULL );
+	assert( data != NULL );
+
+	data->key = key;
 	tree->root = __tree_insert( tree, tree->root, data );
 }
 
@@ -242,9 +240,9 @@ void tree_insert( tree_t* tree, tnode_t* data )
  * @key: Key matching the node to be removed
  * @returns: The new root node
  */
-static tnode_t* __tree_remove( tree_t* tree, tnode_t* root, const uint32 key )
+static tnode_t* __tree_remove( tree_t* tree, tnode_t* root, uint32 key )
 {
-	if ( root == tree->null ) return root;
+	if ( root == &tree->null ) return root;
 
 	tree->last = root;
 
@@ -260,11 +258,11 @@ static tnode_t* __tree_remove( tree_t* tree, tnode_t* root, const uint32 key )
 		tree->deleted = root;
 
 	if ( root == tree->last &&
-		 tree->deleted != tree->null &&
+		 tree->deleted != &tree->null &&
 		 key == tree->deleted->key )
 	{
 		tree->deleted->key = root->key;
-		tree->deleted = tree->null;
+		tree->deleted = &tree->null;
 		root = root->right;
 
 		tree->destructor( tree->last );
@@ -294,7 +292,7 @@ static tnode_t* __tree_remove( tree_t* tree, tnode_t* root, const uint32 key )
  * @tree: The tree to remove from
  * @key: The key matching the node to be removed
  */
-void tree_remove( tree_t* tree, const uint32 key )
+void tree_remove( tree_t* tree, uint32 key )
 {
 	tree->root = __tree_remove( tree, tree->root, key );
 }

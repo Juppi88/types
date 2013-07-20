@@ -16,38 +16,33 @@
 
 #include "stdtypes.h"
 
-typedef struct tnode_s
+typedef struct tnode_t
 {
 	uint32			key;		// A unique key for this node
 	uint32			level;		// Level (=height)
-	struct tnode_s*	left;		// Left subtree
-	struct tnode_s*	right;		// Right subtree
-}
-tnode_t;
+	struct tnode_t*	left;		// Left subtree
+	struct tnode_t*	right;		// Right subtree
+} tnode_t;
 
-typedef struct tree_s
+typedef struct tree_t
 {
 	tnode_t*		root;		// Root node
-	tnode_t*		null;		// A null node
 	tnode_t*		deleted;	// Temp recursive pointer
 	tnode_t*		last;		// Temp recursive pointer
+	tnode_t			null;		// A null node
 	uint32			size;		// Entry count
 
 	void (*destructor)( void* );	// A destructor function for the data
-}
-tree_t;
+} tree_t;
 
 __BEGIN_DECLS
 
 MYLLY_API tree_t*			tree_create				( void (*destructor)( void* ) );
 MYLLY_API void				tree_destroy			( tree_t* tree );
 
-MYLLY_API tnode_t*			tree_find				( tree_t* tree, const uint32 key );
-MYLLY_API void				tree_insert				( tree_t* tree, tnode_t* data );
-MYLLY_API void				tree_remove				( tree_t* tree, const uint32 key );
-
-MYLLY_API tnode_t*			tree_first				( tree_t* tree );
-MYLLY_API tnode_t*			tree_last				( tree_t* tree );
+MYLLY_API tnode_t*			tree_find				( tree_t* tree, uint32 key );
+MYLLY_API void				tree_insert				( tree_t* tree, uint32 key, tnode_t* data );
+MYLLY_API void				tree_remove				( tree_t* tree, uint32 key );
 
 __END_DECLS
 
