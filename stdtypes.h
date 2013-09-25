@@ -79,6 +79,7 @@ typedef uint16		pixel_t;
 #define BIT_OFF(flags,mask)			((flags & mask) == 0)
 #define BIT_ENABLED(new,old,mask)	((new & mask) != 0 && (old & mask) == 0)
 #define BIT_DISABLED(new,old,mask)	((new & mask) == 0 && (old & mask) != 0)
+#define BIT_TOGGLE(flags,mask)		flags = ((flags & mask) == 0) ? (flags|mask) : (flags&~mask)
 
 #define UNREFERENCED_PARAM(P)	(void)P
 
