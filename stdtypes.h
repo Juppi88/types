@@ -16,11 +16,11 @@
 #include <stddef.h>
 
 #ifdef _WIN32
-	#ifndef __MYLLY_USE_GDIPLUS
+	#ifndef MYLLY_WINDOWS_EXTRAS
 	#define WIN32_LEAN_AND_MEAN
 	#endif
 	
-	#ifdef __MYLLY_USE_WINSOCK
+	#ifdef MYLLY_USE_WINSOCK
 	#include <WinSock2.h>
 	#endif
 	
