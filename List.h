@@ -29,6 +29,8 @@ typedef struct {
 /* Some macros to shorten often used function names */
 #define list_begin(list)			list->sentinel.next
 #define list_end(list)				&list->sentinel
+#define list_first(list)			list->sentinel.next
+#define list_last(list)				&list->sentinel.prev
 #define list_push(list,node)		list_push_back(list,node)
 #define list_pop(list)				list_pop_back(list)
 #define list_data_push(list,data)	list_data_push_back(list,data)
