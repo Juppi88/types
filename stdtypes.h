@@ -26,13 +26,15 @@
 	
 	#include <Windows.h>
 
-	#define MYLLY_API		extern
-	#define MYLLY_EXPORT	__declspec(dllexport)
-	#define MYLLY_INLINE	__inline
+	#define MYLLY_API			extern
+	#define MYLLY_EXPORT		__declspec(dllexport)
+	#define MYLLY_INLINE		__inline
+	#define MYLLY_FORCE_INLINE	__forceinline
 #else
-	#define MYLLY_API		extern
-	#define MYLLY_EXPORT	__attribute__((dllexport))
-	#define MYLLY_INLINE	inline
+	#define MYLLY_API			extern
+	#define MYLLY_EXPORT		__attribute__((dllexport))
+	#define MYLLY_INLINE		inline
+	#define MYLLY_FORCE_INLINE	__attribute__((always_inline)) 
 #endif
 
 
