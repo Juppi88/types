@@ -39,6 +39,8 @@
 
 
 // Basic integer types.
+#ifndef INTEGER_TYPES_DEFINED
+
 #ifdef _MSC_VER
 	typedef signed __int8		int8;
 	typedef signed __int16		int16;
@@ -57,6 +59,10 @@
 	typedef unsigned short		uint16;
 	typedef unsigned int		uint32;
 	typedef unsigned long long	uint64;
+#endif
+
+#define INTEGER_TYPES_DEFINED
+
 #endif
 
 typedef uint32		uint;
